@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Moments — prototype</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='36' y2='36' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%238B5CF6'/%3E%3Cstop offset='55%25' stop-color='%235B3FA0'/%3E%3Cstop offset='100%25' stop-color='%232DD4C6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='1' y='1' width='34' height='34' rx='10' fill='url(%23g)'/%3E%3Cg transform='translate(18,18)'%3E%3Cg fill='%23fff' fill-opacity='0.92'%3E%3Cellipse rx='3.6' ry='9.5' transform='rotate(0)'/%3E%3Cellipse rx='3.6' ry='9.5' transform='rotate(60)'/%3E%3Cellipse rx='3.6' ry='9.5' transform='rotate(120)'/%3E%3C/g%3E%3Cg fill='%23fff' fill-opacity='0.55'%3E%3Cellipse rx='3.6' ry='9.5' transform='rotate(30)'/%3E%3Cellipse rx='3.6' ry='9.5' transform='rotate(90)'/%3E%3Cellipse rx='3.6' ry='9.5' transform='rotate(150)'/%3E%3C/g%3E%3Ccircle r='3.2' fill='%23FFD23F'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Poppins:wght@400;500;600&family=Space+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -154,9 +155,10 @@
   .stage-wrap{border-radius:24px; overflow:hidden; background:var(--ink); box-shadow:0 20px 44px rgba(91,63,160,0.18);}
   .stage{position:relative; aspect-ratio:4/5; display:flex; align-items:center; justify-content:center; overflow:hidden;}
   .slide{position:absolute; inset:0; display:flex; flex-direction:column;}
-  .cover-slide{background-size:cover; background-position:center; display:flex; align-items:flex-end; position:relative;}
-  .cover-slide::before{content:""; position:absolute; inset:0; background:linear-gradient(0deg, rgba(20,10,40,0.82), rgba(20,10,40,0.1) 55%);}
-  .cover-inner{position:relative; padding:28px 24px; color:#fff;}
+  .cover-slide{display:flex; align-items:flex-end; position:relative; overflow:hidden; width:100%; height:100%;}
+  .cover-bg{position:absolute; inset:0; background-size:cover; background-position:center;}
+  .cover-gradient{position:absolute; inset:0; background:linear-gradient(0deg, rgba(20,10,40,0.82), rgba(20,10,40,0.1) 55%);}
+  .cover-inner{position:relative; padding:28px 24px; color:#fff; z-index:2;}
   .cover-inner .type{font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.85;}
   .cover-inner h2{font-family:'Baloo 2',sans-serif; font-size:30px; margin:6px 0 4px;}
   .cover-inner .range{font-size:12.5px; opacity:0.8;}
@@ -176,16 +178,62 @@
   .quote-slide .q::before{content:"“"; font-family:'Baloo 2',sans-serif; font-size:30px; display:block; opacity:0.7;}
   .quote-audio{margin-top:14px;}
 
-  .style-bw .cell img, .style-bw .cover-slide{filter:grayscale(1) contrast(1.08);}
-  .style-sepia .cell img, .style-sepia .cover-slide{filter:sepia(0.72) contrast(1.05) saturate(1.08);}
-  .style-sobre .cell img, .style-sobre .cover-slide{filter:saturate(0.68) contrast(1.03) brightness(0.99);}
+  .style-bw .cell img, .style-bw .cover-bg{filter:grayscale(1) contrast(1.1);}
+  .style-sepia .cell img, .style-sepia .cover-bg{filter:sepia(0.72) contrast(1.05) saturate(1.08);}
+  .style-naturel .cell img, .style-naturel .cover-bg{filter:saturate(0.78) contrast(1.05) brightness(0.99);}
   .style-scrap .cell img{border:7px solid #fff; box-shadow:0 4px 12px rgba(0,0,0,0.25); transform:rotate(-1deg); object-fit:cover;}
   .style-scrap .cell{background:#e7ded0; display:flex; align-items:center; justify-content:center;}
+  .style-neon .cell img, .style-neon .cover-bg{filter:saturate(1.35) contrast(1.18) brightness(0.94);}
+  .style-neon .cover-inner h2, .style-neon .caption-title{text-shadow:0 0 18px rgba(139,92,246,0.9), 0 0 4px rgba(255,255,255,0.5);}
+  .style-cinema .cell img, .style-cinema .cover-bg{filter:contrast(1.14) saturate(0.92) brightness(0.96) sepia(0.12);}
+  .style-cinema .stage{padding:11% 0; box-sizing:border-box;}
+  .style-cinema .stage::before, .style-cinema .stage::after{content:""; position:absolute; left:0; right:0; height:11%; background:#000; z-index:5;}
+  .style-cinema .stage::before{top:0;} .style-cinema .stage::after{bottom:0;}
+  .grain-layer{
+    position:absolute; inset:0; pointer-events:none; opacity:0; mix-blend-mode:overlay; z-index:4;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .style-cinema .grain-layer{opacity:0.14;}
+
+  @keyframes kenburns-in{ from{transform:scale(1);} to{transform:scale(1.12);} }
+  @keyframes kenburns-out{ from{transform:scale(1.12);} to{transform:scale(1);} }
+  .cell img.kb{animation:kenburns-in linear both; animation-duration:var(--kb-dur, 4.5s);}
+  .cell:nth-child(2n) img.kb{animation-name:kenburns-out;}
+  .cover-bg.kb{animation:kenburns-in linear both; animation-duration:var(--kb-dur, 4.5s);}
+
+  .slide{opacity:0; animation:slide-in 0.5s ease forwards;}
+  @keyframes slide-in{ from{opacity:0; transform:scale(1.015);} to{opacity:1; transform:scale(1);} }
+  @keyframes tile-in{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
 
   .dots{display:flex; gap:5px; justify-content:center; margin:14px 0 4px; flex-wrap:wrap;}
   .dot{width:5px; height:5px; border-radius:50%; background:var(--line);}
   .dot.on{background:var(--ink); width:16px; border-radius:3px;}
-  .controls{display:flex; justify-content:center; gap:10px; margin-top:12px;}
+  .controls{display:flex; justify-content:center; gap:10px; margin-top:12px; align-items:center;}
+  .icon-btn{
+    width:40px; height:40px; border-radius:50%; border:1.5px solid var(--line); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:16px;
+  }
+
+  /* --- fullscreen / cinema mode --- */
+  .fs-overlay{
+    position:fixed; inset:0; background:#000; z-index:9999; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; touch-action:none;
+  }
+  .fs-overlay .stage-wrap{width:100%; height:100%; border-radius:0; box-shadow:none;}
+  .fs-overlay .stage{aspect-ratio:auto; width:100%; height:100%;}
+  .fs-exit{
+    position:absolute; top:16px; right:16px; z-index:10000; width:42px; height:42px; border-radius:50%;
+    background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.3); color:#fff; font-size:18px; cursor:pointer;
+  }
+  .fs-controls{position:absolute; bottom:22px; left:0; right:0; display:flex; justify-content:center; gap:12px; z-index:10000;}
+  .fs-controls .icon-btn{background:rgba(255,255,255,0.14); border-color:rgba(255,255,255,0.3); color:#fff;}
+  .fs-dots{position:absolute; bottom:74px; left:0; right:0; z-index:10000;}
+
+  /* --- ingestion progress --- */
+  .progress-big{margin-top:16px;}
+  .progress-track{height:10px; background:var(--line); border-radius:20px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--purple), var(--teal)); width:0%; transition:width .18s ease;}
+  .progress-label{display:flex; justify-content:space-between; font-family:'Space Mono',monospace; font-size:12px; color:var(--purple-deep); margin-top:8px;}
 
   /* --- result: grid/album formats --- */
   .grid-format{columns:2; column-gap:10px;}
@@ -197,6 +245,12 @@
   .g-tile.text p{font-size:12.5px; margin:0; opacity:0.9; line-height:1.5;}
   .g-tile .tag{position:absolute; top:8px; left:8px; background:rgba(20,10,40,0.55); color:#fff; font-family:'Space Mono',monospace; font-size:10px; padding:3px 8px; border-radius:20px;}
   .format-album .g-tile img{border:7px solid #fff; box-shadow:0 4px 10px rgba(0,0,0,0.22);}
+  .grid-format.style-bw .g-tile img{filter:grayscale(1) contrast(1.1);}
+  .grid-format.style-sepia .g-tile img{filter:sepia(0.72) contrast(1.05) saturate(1.08);}
+  .grid-format.style-naturel .g-tile img{filter:saturate(0.78) contrast(1.05) brightness(0.99);}
+  .grid-format.style-neon .g-tile img{filter:saturate(1.35) contrast(1.18) brightness(0.94);}
+  .grid-format.style-cinema .g-tile img{filter:contrast(1.14) saturate(0.92) brightness(0.96) sepia(0.12);}
+  .g-tile{opacity:0; animation:tile-in 0.5s ease forwards;}
 
   .hint{font-size:12px; color:#6b6088;}
 </style>
@@ -235,8 +289,10 @@ const state = {
   photos: [],
   processing: false,
   processedCount: 0,
+  processTotal: 0,
 
   format: 'diapo',
+  fullscreen: false,
   slideCountOption: 'auto',
   style: 'auto',
   resolvedStyle: null,
@@ -262,9 +318,11 @@ const EXAMPLES = {
 
 const STYLES = [
   {id:'auto', label:'Automatique', swatch:'linear-gradient(135deg,#8B5CF6,#FFD23F,#2DD4C6)'},
-  {id:'sobre', label:'Sobre', swatch:'linear-gradient(135deg,#cfd6c8,#9fae9c)'},
+  {id:'naturel', label:'Naturel', swatch:'linear-gradient(135deg,#cfd6c8,#9fae9c)'},
   {id:'bw', label:'Noir & blanc', swatch:'linear-gradient(135deg,#2b2b2b,#c9c9c9)'},
   {id:'sepia', label:'Sépia', swatch:'linear-gradient(135deg,#7a5230,#d8b98a)'},
+  {id:'cinema', label:'Cinéma', swatch:'linear-gradient(135deg,#2b2320,#c9a877)'},
+  {id:'neon', label:'Néon', swatch:'linear-gradient(135deg,#1a1030,#8B5CF6,#2DD4C6)'},
   {id:'scrap', label:'Scrapbooking', swatch:'linear-gradient(135deg,#e7ded0,#fff)'},
 ];
 const FORMATS = [
@@ -291,10 +349,28 @@ function txt(s){ return document.createTextNode(s); }
 
 function logoSvg(){
   const wrap = document.createElement('div');
-  wrap.innerHTML = `<svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-    <circle cx="14" cy="14" r="11" fill="#8B5CF6" opacity="0.9"/>
-    <circle cx="21" cy="13" r="9" fill="#FFD23F" opacity="0.9"/>
-    <circle cx="17" cy="21" r="9" fill="#2DD4C6" opacity="0.85"/>
+  wrap.innerHTML = `<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+    <defs>
+      <linearGradient id="momentsGrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#8B5CF6"/>
+        <stop offset="55%" stop-color="#5B3FA0"/>
+        <stop offset="100%" stop-color="#2DD4C6"/>
+      </linearGradient>
+    </defs>
+    <rect x="1" y="1" width="34" height="34" rx="10" fill="url(#momentsGrad)"/>
+    <g transform="translate(18,18)">
+      <g fill="#fff" fill-opacity="0.92">
+        <ellipse rx="3.6" ry="9.5" transform="rotate(0)"/>
+        <ellipse rx="3.6" ry="9.5" transform="rotate(60)"/>
+        <ellipse rx="3.6" ry="9.5" transform="rotate(120)"/>
+      </g>
+      <g fill="#fff" fill-opacity="0.55">
+        <ellipse rx="3.6" ry="9.5" transform="rotate(30)"/>
+        <ellipse rx="3.6" ry="9.5" transform="rotate(90)"/>
+        <ellipse rx="3.6" ry="9.5" transform="rotate(150)"/>
+      </g>
+      <circle r="3.2" fill="#FFD23F"/>
+    </g>
   </svg>`;
   return wrap.firstChild;
 }
@@ -310,6 +386,9 @@ function render(){
   else if(state.step===4) app.appendChild(renderStep4());
   else if(state.step===5) app.appendChild(renderStep5());
   else if(state.step===6) app.appendChild(renderStep6());
+  if(state.step===6 && state.fullscreen && state.format==='diapo'){
+    app.appendChild(renderFullscreenOverlay());
+  }
 }
 
 function renderTopbar(){
@@ -560,12 +639,12 @@ function parseExif(buffer){
   }catch(e){ /* not fatal */ }
   return null;
 }
-function analyzeImage(imgEl){
+function analyzeImage(src){
   const size = 32;
   const canvas = document.createElement('canvas');
   canvas.width = size; canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(imgEl, 0, 0, size, size);
+  const ctx = canvas.getContext('2d', {willReadFrequently:true});
+  ctx.drawImage(src, 0, 0, size, size);
   const data = ctx.getImageData(0,0,size,size).data;
   const gray = new Float32Array(size*size);
   let rSum=0,gSum=0,bSum=0;
@@ -585,17 +664,22 @@ function analyzeImage(imgEl){
   const mean = sum/count;
   const variance = sumSq/count - mean*mean;
 
-  const hs = 8;
-  const hcanvas = document.createElement('canvas');
-  hcanvas.width=hs; hcanvas.height=hs;
-  const hctx = hcanvas.getContext('2d');
-  hctx.drawImage(imgEl,0,0,hs,hs);
-  const hdata = hctx.getImageData(0,0,hs,hs).data;
-  let hgray=[], hsum=0;
-  for(let i=0;i<hs*hs;i++){
-    const v = 0.299*hdata[i*4]+0.587*hdata[i*4+1]+0.114*hdata[i*4+2];
-    hgray.push(v); hsum+=v;
+  // 16x16 (256-bit) hash, downsampled by block-averaging the same 32x32 sample
+  // (no second canvas draw needed — this is what made ingestion slow before)
+  const hs = 16, block = size/hs;
+  const hgray = new Float32Array(hs*hs);
+  for(let hy=0; hy<hs; hy++){
+    for(let hx=0; hx<hs; hx++){
+      let acc=0;
+      for(let by=0; by<block; by++){
+        for(let bx=0; bx<block; bx++){
+          acc += gray[(hy*block+by)*size + (hx*block+bx)];
+        }
+      }
+      hgray[hy*hs+hx] = acc/(block*block);
+    }
   }
+  let hsum=0; for(let i=0;i<hgray.length;i++) hsum+=hgray[i];
   const havg = hsum/hgray.length;
   let hash='';
   for(let i=0;i<hgray.length;i++) hash += hgray[i]>havg ? '1':'0';
@@ -614,25 +698,57 @@ function loadImage(url){
     img.src=url;
   });
 }
+const SUPPORTS_BITMAP_RESIZE = (typeof createImageBitmap === 'function');
+// Decode a small analysis sample fast: createImageBitmap can downscale *during* decode,
+// which is far cheaper than decoding a 12MP photo into a full <img> just to shrink it after.
+async function getAnalysisSource(file){
+  if(SUPPORTS_BITMAP_RESIZE){
+    try{
+      const bmp = await createImageBitmap(file, {resizeWidth:32, resizeHeight:32, resizeQuality:'low'});
+      return {src: bmp, tempUrl: null};
+    }catch(e){ /* fall through to <img> fallback below */ }
+  }
+  const tempUrl = URL.createObjectURL(file);
+  const img = await loadImage(tempUrl);
+  return {src: img, tempUrl};
+}
+async function processOneFile(file){
+  const buffer = await file.arrayBuffer();
+  const exif = parseExif(buffer);
+  const {src, tempUrl} = await getAnalysisSource(file);
+  const a = analyzeImage(src);
+  if(src.close) src.close(); // release ImageBitmap memory immediately
+  if(tempUrl) URL.revokeObjectURL(tempUrl); // fallback path only — avoid leaking temp URLs on old browsers
+  const date = (exif && exif.date) ? exif.date : new Date(file.lastModified);
+  const url = URL.createObjectURL(file); // kept for display in the result step
+  return { file, url, date, lat: exif?exif.lat:null, lon: exif?exif.lon:null, blur:a.blur, hash:a.hash, avgR:a.avgR, avgG:a.avgG, avgB:a.avgB };
+}
 async function ingestFiles(fileList){
   state.processing = true;
   state.processedCount = 0;
+  state.processTotal = fileList.length;
   state.photos = [];
   render();
   const files = Array.from(fileList);
-  for(const file of files){
-    try{
-      const buffer = await file.arrayBuffer();
-      const exif = parseExif(buffer);
-      const url = URL.createObjectURL(file);
-      const img = await loadImage(url);
-      const a = analyzeImage(img);
-      const date = (exif && exif.date) ? exif.date : new Date(file.lastModified);
-      state.photos.push({ file, url, date, lat: exif?exif.lat:null, lon: exif?exif.lon:null, blur:a.blur, hash:a.hash, avgR:a.avgR, avgG:a.avgG, avgB:a.avgB });
-    }catch(e){ /* skip */ }
-    state.processedCount++;
-    if(state.processedCount % 5 === 0) render();
+  const CONCURRENCY = 6;
+  let cursor = 0;
+  let lastRender = 0;
+  async function worker(){
+    while(cursor < files.length){
+      const i = cursor++;
+      try{
+        const photo = await processOneFile(files[i]);
+        state.photos.push(photo);
+      }catch(e){ /* skip unreadable file */ }
+      state.processedCount++;
+      const now = performance.now();
+      if(now - lastRender > 90 || state.processedCount === files.length){
+        lastRender = now;
+        render();
+      }
+    }
   }
+  await Promise.all(Array.from({length: Math.min(CONCURRENCY, files.length)}, worker));
   state.photos.sort((a,b)=> a.date-b.date);
   state.processing = false;
   render();
@@ -647,9 +763,22 @@ function renderStep3(){
 
   const card = el('div',{class:'card'});
   const dz = el('div',{class:'dropzone', onclick:()=>document.getElementById('fileInput').click()});
-  dz.appendChild(el('div',{class:'big'},[txt(state.photos.length ? state.photos.length+' photos chargées' : 'Dépose ou choisis tes photos')]));
-  dz.appendChild(el('p',{},[txt(state.processing ? ('Analyse en cours… '+state.processedCount+' traitées') : 'Glisser-déposer ou clic pour parcourir.')]));
+  dz.appendChild(el('div',{class:'big'},[txt(state.processing ? 'Analyse en cours…' : (state.photos.length ? state.photos.length+' photos chargées' : 'Dépose ou choisis tes photos'))]));
+  if(!state.processing) dz.appendChild(el('p',{},[txt('Glisser-déposer ou clic pour parcourir — aucune limite de nombre.')]));
   card.appendChild(dz);
+  if(state.processing){
+    const total = state.processTotal || 1;
+    const pct = Math.round((state.processedCount/total)*100);
+    const bar = el('div',{class:'progress-big'});
+    const track = el('div',{class:'progress-track'});
+    track.appendChild(el('div',{class:'progress-fill', style:`width:${pct}%`}));
+    bar.appendChild(track);
+    const label = el('div',{class:'progress-label'});
+    label.appendChild(el('span',{},[txt(state.processedCount+' / '+total+' photos')]));
+    label.appendChild(el('span',{},[txt(pct+'%')]));
+    bar.appendChild(label);
+    card.appendChild(bar);
+  }
   const input = el('input',{type:'file', id:'fileInput', accept:'image/*', multiple:'multiple', onchange:(e)=>{ if(e.target.files.length) ingestFiles(e.target.files); }});
   card.appendChild(input);
   ['dragover','dragleave','drop'].forEach(evt=>{
@@ -737,18 +866,19 @@ function renderStep4(){
 
 // ================= SELECTION ALGORITHM =================
 function resolveAutoStyle(photos){
-  if(!photos.length) return 'sobre';
-  let rSum=0,gSum=0,bSum=0;
-  photos.forEach(p=>{ rSum+=p.avgR; gSum+=p.avgG; bSum+=p.avgB; });
+  if(!photos.length) return 'naturel';
+  let rSum=0,gSum=0,bSum=0,brightSum=0;
+  photos.forEach(p=>{ rSum+=p.avgR; gSum+=p.avgG; bSum+=p.avgB; brightSum += (p.avgR+p.avgG+p.avgB)/3; });
   const n = photos.length;
-  const r=rSum/n, g=gSum/n, b=bSum/n;
+  const r=rSum/n, g=gSum/n, b=bSum/n, brightness=brightSum/n;
   const maxC = Math.max(r,g,b), minC = Math.min(r,g,b);
   const sat = maxC>0 ? (maxC-minC)/maxC : 0;
   const warmth = r-b;
+  if(brightness < 70 && sat > 0.15) return 'neon';
   if(sat < 0.10) return 'bw';
   if(warmth > 16 && sat < 0.32) return 'sepia';
-  if(sat > 0.32) return 'scrap';
-  return 'sobre';
+  if(sat > 0.38) return 'scrap';
+  return 'naturel';
 }
 
 function runSelection(){
@@ -768,7 +898,12 @@ function runSelection(){
     const list = groups[k].slice().sort((a,b)=>a.date-b.date);
     for(let i=1;i<list.length;i++){
       if(blurryIds.has(list[i].file) || blurryIds.has(list[i-1].file)) continue;
-      if(hamming(list[i].hash, list[i-1].hash) <= 6){
+      const secondsApart = Math.abs(list[i].date - list[i-1].date)/1000;
+      const hashLen = list[i].hash.length;
+      const closeEnough = hamming(list[i].hash, list[i-1].hash) <= Math.round(hashLen*0.09);
+      // only treat as a duplicate if visually near-identical AND taken within a couple of minutes
+      // (a burst/retake), never just "similar-looking" shots spread through the day
+      if(closeEnough && secondsApart <= 120){
         const loser = list[i].blur >= list[i-1].blur ? list[i-1] : list[i];
         dupIds.add(loser.file);
       }
@@ -882,16 +1017,31 @@ function renderStep5(){
 }
 
 // ================= STEP 6 — result =================
+const AUTOPLAY_MS = 4200;
 function stopPlay(){ if(state.playTimer){clearInterval(state.playTimer); state.playTimer=null;} state.playing=false; }
 function startPlay(){
   stopPlay(); state.playing=true;
-  state.playTimer = setInterval(()=>{ state.slideIndex=(state.slideIndex+1)%state.slides.length; render(); }, 3200);
+  state.playTimer = setInterval(()=>{ state.slideIndex=(state.slideIndex+1)%state.slides.length; render(); }, AUTOPLAY_MS);
+}
+function goTo(i){ state.slideIndex = (i+state.slides.length)%state.slides.length; render(); }
+function attachSwipe(node){
+  let startX=null;
+  node.addEventListener('touchstart', e=>{ startX = e.touches[0].clientX; }, {passive:true});
+  node.addEventListener('touchend', e=>{
+    if(startX===null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if(Math.abs(dx) > 40){ stopPlay(); goTo(state.slideIndex + (dx<0?1:-1)); }
+    startX=null;
+  }, {passive:true});
 }
 
 function renderSlide(slide){
   const holder = el('div',{class:'slide'});
+  const kbDur = (AUTOPLAY_MS+900)+'ms';
   if(slide.type==='cover'){
-    const cover = el('div',{class:'cover-slide', style:`background-image:url('${state.selection[0]?.url||''}')`});
+    const cover = el('div',{class:'cover-slide'});
+    cover.appendChild(el('div',{class:'cover-bg kb', style:`background-image:url('${state.selection[0]?.url||''}'); --kb-dur:${kbDur};`}));
+    cover.appendChild(el('div',{class:'cover-gradient'}));
     const inner = el('div',{class:'cover-inner'});
     const typeLabel = allTypes().find(t=>t.id===state.eventType)?.label || 'Moment';
     inner.appendChild(el('div',{class:'type'},[txt(typeLabel)]));
@@ -906,7 +1056,7 @@ function renderSlide(slide){
     const grid = el('div',{class:'photo-grid tpl-'+slide.template});
     slide.photos.forEach((p,i)=>{
       const cell = el('div',{class:'cell'});
-      cell.appendChild(el('img',{src:p.url}));
+      cell.appendChild(el('img',{src:p.url, class:'kb', style:`--kb-dur:${kbDur};`}));
       if(i===0 && slide.isFirstOfDay) cell.appendChild(el('div',{class:'day-tag'},[txt(fmtDay(slide.day))]));
       grid.appendChild(cell);
     });
@@ -928,23 +1078,47 @@ function renderSlide(slide){
   return holder;
 }
 
-function renderDiapoFormat(){
-  const wrap = el('div',{class:'stage-wrap style-'+state.resolvedStyle});
+function renderPlayerChrome(isFullscreen){
+  const wrap = el('div',{class:'stage-wrap'});
   const stage = el('div',{class:'stage'});
   const slide = state.slides[state.slideIndex];
   if(slide) stage.appendChild(renderSlide(slide));
+  stage.appendChild(el('div',{class:'grain-layer'}));
   wrap.appendChild(stage);
-  const dots = el('div',{class:'dots'});
+  attachSwipe(stage);
+
+  const dots = el('div',{class:'dots'+(isFullscreen?' fs-dots':'')});
   state.slides.forEach((_,i)=> dots.appendChild(el('span',{class:'dot'+(i===state.slideIndex?' on':'')})));
-  const controls = el('div',{class:'controls'});
-  controls.appendChild(el('button',{class:'ghost', onclick:()=>{stopPlay(); state.slideIndex=(state.slideIndex-1+state.slides.length)%state.slides.length; render();}},[txt('‹')]));
-  controls.appendChild(el('button',{class:'ghost', onclick:()=>{ state.playing?stopPlay():startPlay(); render(); }},[txt(state.playing?'Pause':'Lecture ▶')]));
-  controls.appendChild(el('button',{class:'ghost', onclick:()=>{stopPlay(); state.slideIndex=(state.slideIndex+1)%state.slides.length; render();}},[txt('›')]));
+
+  const btnClass = 'icon-btn';
+  const controls = el('div',{class:'controls'+(isFullscreen?' fs-controls':'')});
+  controls.appendChild(el('button',{class:btnClass, onclick:()=>{stopPlay(); goTo(state.slideIndex-1);}},[txt('‹')]));
+  controls.appendChild(el('button',{class:btnClass, onclick:()=>{ state.playing?stopPlay():startPlay(); render(); }},[txt(state.playing?'❚❚':'▶')]));
+  controls.appendChild(el('button',{class:btnClass, onclick:()=>{stopPlay(); goTo(state.slideIndex+1);}},[txt('›')]));
+  if(!isFullscreen){
+    controls.appendChild(el('button',{class:'icon-btn', onclick:()=>{state.fullscreen=true; render();}},[txt('⛶')]));
+  }
+  return {wrap, dots, controls};
+}
+
+function renderDiapoFormat(){
+  const {wrap, dots, controls} = renderPlayerChrome(false);
+  wrap.classList.add('style-'+state.resolvedStyle);
   const container = el('div',{});
   container.appendChild(wrap);
   container.appendChild(dots);
   container.appendChild(controls);
   return container;
+}
+
+function renderFullscreenOverlay(){
+  const ov = el('div',{class:'fs-overlay style-'+state.resolvedStyle});
+  ov.appendChild(el('button',{class:'fs-exit', onclick:()=>{state.fullscreen=false; render();}},[txt('✕')]));
+  const {wrap, dots, controls} = renderPlayerChrome(true);
+  ov.appendChild(wrap);
+  ov.appendChild(dots);
+  ov.appendChild(controls);
+  return ov;
 }
 
 function renderGridFormat(kind){
