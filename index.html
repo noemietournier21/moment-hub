@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moments — prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Poppins:wght@400;500;600&family=Space+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple:#8B5CF6;
+    --purple-deep:#5B3FA0;
+    --lilac:#EFE6FF;
+    --yellow:#FFD23F;
+    --teal:#2DD4C6;
+    --sky:#4FB8E8;
+    --ink:#241B36;
+    --bg:#FBF7FF;
+    --card:#FFFFFF;
+    --line:rgba(36,27,54,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(650px 420px at 100% -10%, rgba(255,210,63,0.28), transparent 60%),
+      radial-gradient(600px 500px at -10% 10%, rgba(45,212,198,0.22), transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Poppins', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:800px; margin:0 auto; padding:26px 20px 90px;}
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand svg{display:block;}
+  .brand b{font-family:'Baloo 2',sans-serif; font-size:20px; letter-spacing:-0.01em;}
+  .stepper{display:flex; gap:6px;}
+  .step-dot{width:8px; height:8px; border-radius:50%; background:var(--line);}
+  .step-dot.done{background:var(--purple);}
+  .step-dot.on{background:var(--purple); width:22px; border-radius:6px;}
+
+  .eyebrow{
+    font-family:'Space Mono',monospace; font-size:11.5px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--purple-deep); display:flex; align-items:center; gap:8px; margin-bottom:6px;
+  }
+  h1{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:32px; line-height:1.08; margin:0 0 8px; letter-spacing:-0.01em;}
+  .sub{color:#5b527a; font-size:14.5px; max-width:56ch; margin:0 0 22px;}
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:22px;
+    padding:24px; box-shadow:0 10px 30px rgba(91,63,160,0.06);
+  }
+  .card + .card{margin-top:16px;}
+
+  label.field{display:block; margin-bottom:18px;}
+  label.field span.lbl{
+    display:block; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.07em;
+    text-transform:uppercase; color:var(--purple-deep); margin-bottom:7px;
+  }
+  input[type=text], textarea{
+    width:100%; font-family:'Poppins',sans-serif; font-size:15px; padding:12px 14px;
+    border:1.5px solid var(--line); border-radius:14px; background:#fff; color:var(--ink);
+  }
+  input[type=text]:focus, textarea:focus{outline:none; border-color:var(--purple);}
+  textarea{resize:vertical; min-height:70px;}
+
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    font-family:'Poppins',sans-serif; font-size:13.5px; font-weight:500; padding:9px 16px;
+    border:1.5px solid var(--line); border-radius:20px; cursor:pointer; background:#fff; color:var(--ink);
+  }
+  .chip.active{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .chip.add{border-style:dashed; color:var(--purple-deep); border-color:var(--purple);}
+  .chip-input-row{display:flex; gap:8px; margin-top:8px;}
+  .chip-input-row input{flex:1;}
+
+  .privacy{
+    display:flex; gap:12px; background:var(--lilac); border-radius:16px; padding:14px 16px; margin-top:16px;
+  }
+  .privacy .ic{flex-shrink:0; font-size:20px;}
+  .privacy p{margin:0; font-size:13px; line-height:1.5; color:#463a68;}
+  .privacy b{color:var(--ink);}
+
+  .mode-toggle{display:flex; gap:8px; margin-bottom:16px;}
+  .mode-toggle button{
+    flex:1; font-family:'Poppins',sans-serif; font-weight:500; font-size:14px; padding:11px;
+    border-radius:14px; border:1.5px solid var(--line); background:#fff; cursor:pointer; color:var(--ink);
+  }
+  .mode-toggle button.active{background:var(--purple); border-color:var(--purple); color:#fff;}
+
+  .example{
+    font-size:13px; color:#6b6088; font-style:italic; background:#F7F3FF; border-radius:12px;
+    padding:12px 14px; margin-bottom:12px; border:1px dashed var(--line);
+  }
+
+  .rec-panel{display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px 10px;}
+  .rec-btn{
+    width:74px; height:74px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--purple); color:#fff; font-size:26px; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 22px rgba(139,92,246,0.35);
+  }
+  .rec-btn.recording{background:#E0455F; animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,69,95,0.45);}70%{box-shadow:0 0 0 16px rgba(224,69,95,0);}100%{box-shadow:0 0 0 0 rgba(224,69,95,0);}}
+  .rec-time{font-family:'Space Mono',monospace; font-size:22px;}
+  .rec-hint{font-size:12.5px; color:#5b527a; text-align:center;}
+  .mic-error{font-size:12.5px; color:#B23A2E; text-align:center; max-width:44ch;}
+
+  .dropzone{
+    border:2px dashed var(--purple); border-radius:18px; padding:34px 18px; text-align:center;
+    cursor:pointer; background:linear-gradient(180deg, rgba(139,92,246,0.05), rgba(255,210,63,0.05));
+  }
+  .dropzone.drag{background:rgba(139,92,246,0.12);}
+  .dropzone .big{font-family:'Baloo 2',sans-serif; font-size:19px; margin-bottom:4px;}
+  .dropzone p{margin:0; font-size:13px; color:#5b527a;}
+  #fileInput{display:none;}
+
+  .format-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  @media(max-width:560px){.format-grid{grid-template-columns:1fr;}}
+  .format-card{
+    border:1.5px solid var(--line); border-radius:16px; padding:14px; cursor:pointer; background:#fff; text-align:left;
+  }
+  .format-card.active{border-color:var(--purple); box-shadow:inset 0 0 0 1.5px var(--purple);}
+  .format-card .ic{font-size:22px;}
+  .format-card b{display:block; font-family:'Baloo 2',sans-serif; font-size:15px; margin-top:6px;}
+  .format-card p{margin:2px 0 0; font-size:12px; color:#6b6088;}
+
+  .style-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  @media(max-width:560px){.style-grid{grid-template-columns:repeat(2,1fr);}}
+  .style-card{border:1.5px solid var(--line); border-radius:16px; padding:10px; cursor:pointer; background:#fff; text-align:center;}
+  .style-card.active{border-color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--ink);}
+  .style-card .sw{height:34px; border-radius:10px; margin-bottom:8px;}
+  .style-card span{font-size:12.5px; font-weight:500;}
+
+  .ticket{font-family:'Space Mono',monospace; font-size:12px; color:var(--purple-deep); display:flex; justify-content:space-between; border-top:1px dashed var(--line); margin-top:18px; padding-top:14px;}
+  .stat-line{display:flex; justify-content:space-between; font-size:13.5px; padding:7px 0; border-bottom:1px solid var(--line);}
+  .stat-line:last-child{border-bottom:none;}
+  .stat-line .n{font-family:'Space Mono',monospace; font-weight:500;}
+  .badge{display:inline-block; font-family:'Space Mono',monospace; font-size:11px; padding:3px 10px; border-radius:20px; background:var(--yellow); color:var(--ink); margin-left:8px;}
+
+  button.primary{
+    font-family:'Poppins',sans-serif; font-weight:600; font-size:14px; background:var(--ink); color:#fff;
+    border:none; padding:14px 24px; border-radius:16px; cursor:pointer;
+  }
+  button.primary:disabled{opacity:0.35; cursor:not-allowed;}
+  button.primary:hover:not(:disabled){background:var(--purple-deep);}
+  button.ghost{
+    font-family:'Poppins',sans-serif; font-weight:500; font-size:13.5px; background:transparent;
+    border:1.5px solid var(--line); color:var(--ink); padding:12px 18px; border-radius:16px; cursor:pointer;
+  }
+  .footer-nav{display:flex; justify-content:space-between; align-items:center; margin-top:20px;}
+
+  /* --- result: diaporama --- */
+  .stage-wrap{border-radius:24px; overflow:hidden; background:var(--ink); box-shadow:0 20px 44px rgba(91,63,160,0.18);}
+  .stage{position:relative; aspect-ratio:4/5; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .slide{position:absolute; inset:0; display:flex; flex-direction:column;}
+  .cover-slide{background-size:cover; background-position:center; display:flex; align-items:flex-end; position:relative;}
+  .cover-slide::before{content:""; position:absolute; inset:0; background:linear-gradient(0deg, rgba(20,10,40,0.82), rgba(20,10,40,0.1) 55%);}
+  .cover-inner{position:relative; padding:28px 24px; color:#fff;}
+  .cover-inner .type{font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.85;}
+  .cover-inner h2{font-family:'Baloo 2',sans-serif; font-size:30px; margin:6px 0 4px;}
+  .cover-inner .range{font-size:12.5px; opacity:0.8;}
+
+  .photo-grid{flex:1; display:grid; gap:3px; padding:3px; background:var(--ink);}
+  .photo-grid.tpl-single{grid-template-columns:1fr;}
+  .photo-grid.tpl-duo{grid-template-columns:1fr 1fr;}
+  .photo-grid.tpl-trio{grid-template-columns:2fr 1fr; grid-template-rows:1fr 1fr;}
+  .photo-grid.tpl-trio .cell:nth-child(1){grid-row:1/3;}
+  .photo-grid.tpl-quad{grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;}
+  .cell{position:relative; overflow:hidden; background:#000;}
+  .cell img{width:100%; height:100%; object-fit:cover; display:block;}
+  .day-tag{position:absolute; top:10px; left:10px; background:rgba(20,10,40,0.55); color:#fff; font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:0.06em; padding:4px 9px; border-radius:20px;}
+
+  .quote-slide{flex:1; background:linear-gradient(135deg, var(--purple), var(--purple-deep)); color:#fff; display:flex; align-items:center; justify-content:center; padding:34px;}
+  .quote-slide .q{font-size:15px; line-height:1.6; text-align:center; max-width:34ch;}
+  .quote-slide .q::before{content:"“"; font-family:'Baloo 2',sans-serif; font-size:30px; display:block; opacity:0.7;}
+  .quote-audio{margin-top:14px;}
+
+  .style-bw .cell img, .style-bw .cover-slide{filter:grayscale(1) contrast(1.08);}
+  .style-sepia .cell img, .style-sepia .cover-slide{filter:sepia(0.72) contrast(1.05) saturate(1.08);}
+  .style-sobre .cell img, .style-sobre .cover-slide{filter:saturate(0.68) contrast(1.03) brightness(0.99);}
+  .style-scrap .cell img{border:7px solid #fff; box-shadow:0 4px 12px rgba(0,0,0,0.25); transform:rotate(-1deg); object-fit:cover;}
+  .style-scrap .cell{background:#e7ded0; display:flex; align-items:center; justify-content:center;}
+
+  .dots{display:flex; gap:5px; justify-content:center; margin:14px 0 4px; flex-wrap:wrap;}
+  .dot{width:5px; height:5px; border-radius:50%; background:var(--line);}
+  .dot.on{background:var(--ink); width:16px; border-radius:3px;}
+  .controls{display:flex; justify-content:center; gap:10px; margin-top:12px;}
+
+  /* --- result: grid/album formats --- */
+  .grid-format{columns:2; column-gap:10px;}
+  @media(min-width:560px){.grid-format{columns:3;}}
+  .g-tile{break-inside:avoid; margin-bottom:10px; border-radius:14px; overflow:hidden; position:relative;}
+  .g-tile img{width:100%; display:block;}
+  .g-tile.text{background:var(--purple); color:#fff; padding:20px 16px; border-radius:16px;}
+  .g-tile.text h3{font-family:'Baloo 2',sans-serif; margin:0 0 6px; font-size:19px;}
+  .g-tile.text p{font-size:12.5px; margin:0; opacity:0.9; line-height:1.5;}
+  .g-tile .tag{position:absolute; top:8px; left:8px; background:rgba(20,10,40,0.55); color:#fff; font-family:'Space Mono',monospace; font-size:10px; padding:3px 8px; border-radius:20px;}
+  .format-album .g-tile img{border:7px solid #fff; box-shadow:0 4px 10px rgba(0,0,0,0.22);}
+
+  .hint{font-size:12px; color:#6b6088;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+// ================= STATE =================
+const state = {
+  step: 1,
+  presetTypes: [
+    {id:'voyage', label:'Voyage'},
+    {id:'weekend', label:'Week-end'},
+    {id:'mariage', label:'Mariage'},
+    {id:'anniversaire', label:'Anniversaire'},
+    {id:'naissance', label:'Naissance'},
+    {id:'evenement', label:'Événement'},
+    {id:'famille', label:'Famille'},
+    {id:'autre', label:'Autre'},
+  ],
+  customTypes: [],
+  addingType: false,
+  eventType: 'voyage',
+  destination: '',
+
+  narrationMode: 'texte',
+  narration: '',
+  recording: false,
+  recordSeconds: 0,
+  mediaRecorder: null,
+  recordTimer: null,
+  audioUrl: null,
+  micError: null,
+
+  photos: [],
+  processing: false,
+  processedCount: 0,
+
+  format: 'diapo',
+  slideCountOption: 'auto',
+  style: 'auto',
+  resolvedStyle: null,
+
+  stats: null,
+  selection: [],
+  slides: [],
+  slideIndex: 0,
+  playing: false,
+  playTimer: null,
+};
+
+const EXAMPLES = {
+  voyage: "Ex. : « Deux semaines au Japon, entre Tokyo la frénétique et les temples silencieux de Kyoto. On a mangé beaucoup trop de ramens et failli rater un train à Osaka. »",
+  weekend: "Ex. : « Un week-end improvisé à Lisbonne pour souffler un peu. Miradouros, pastéis de nata et une bonne dose de flânerie. »",
+  mariage: "Ex. : « Le mariage de Camille et Hugo, le 14 juin, dans le jardin de ses grands-parents. Il a plu pile pendant les photos, personne n'a pu s'arrêter de rire. »",
+  anniversaire: "Ex. : « Les 30 ans de Sarah, fête surprise préparée en secret pendant trois semaines. Elle n'a rien vu venir. »",
+  naissance: "Ex. : « L'arrivée de Léo, le 2 mars au petit matin. Les premiers jours à la maison, entre épuisement et émerveillement. »",
+  evenement: "Ex. : « Le concert de fin d'année, trois mois de répétitions pour dix minutes sur scène — et ça valait le coup. »",
+  famille: "Ex. : « Le rassemblement de famille de l'été, toutes générations confondues, chez mamie. »",
+  autre: "Ex. : « Raconte ce moment comme tu le raconterais à un ami : ce qui s'est passé, ce que tu as ressenti, un détail qui te fait sourire. »",
+};
+
+const STYLES = [
+  {id:'auto', label:'Automatique', swatch:'linear-gradient(135deg,#8B5CF6,#FFD23F,#2DD4C6)'},
+  {id:'sobre', label:'Sobre', swatch:'linear-gradient(135deg,#cfd6c8,#9fae9c)'},
+  {id:'bw', label:'Noir & blanc', swatch:'linear-gradient(135deg,#2b2b2b,#c9c9c9)'},
+  {id:'sepia', label:'Sépia', swatch:'linear-gradient(135deg,#7a5230,#d8b98a)'},
+  {id:'scrap', label:'Scrapbooking', swatch:'linear-gradient(135deg,#e7ded0,#fff)'},
+];
+const FORMATS = [
+  {id:'diapo', ic:'▶', label:'Diaporama', desc:'Défilement animé, plusieurs mises en page.'},
+  {id:'moodboard', ic:'▦', label:'Mood board', desc:'Une planche continue, à faire défiler.'},
+  {id:'album', ic:'❖', label:'Album photo', desc:'Façon polaroïds, un peu bancal.'},
+];
+const SLIDE_COUNTS = [['5','5'],['10','10'],['20','20'],['auto','Automatique']];
+
+// ================= DOM HELPER =================
+function el(tag, attrs={}, children=[]){
+  const e = document.createElement(tag);
+  for(const k in attrs){
+    if(k==='class') e.className=attrs[k];
+    else if(k==='html') e.innerHTML=attrs[k];
+    else if(k==='style') e.setAttribute('style', attrs[k]);
+    else if(k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  children.forEach(c=> e.appendChild(c));
+  return e;
+}
+function txt(s){ return document.createTextNode(s); }
+
+function logoSvg(){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `<svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+    <circle cx="14" cy="14" r="11" fill="#8B5CF6" opacity="0.9"/>
+    <circle cx="21" cy="13" r="9" fill="#FFD23F" opacity="0.9"/>
+    <circle cx="17" cy="21" r="9" fill="#2DD4C6" opacity="0.85"/>
+  </svg>`;
+  return wrap.firstChild;
+}
+
+// ================= RENDER ROOT =================
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  app.appendChild(renderTopbar());
+  if(state.step===1) app.appendChild(renderStep1());
+  else if(state.step===2) app.appendChild(renderStep2());
+  else if(state.step===3) app.appendChild(renderStep3());
+  else if(state.step===4) app.appendChild(renderStep4());
+  else if(state.step===5) app.appendChild(renderStep5());
+  else if(state.step===6) app.appendChild(renderStep6());
+}
+
+function renderTopbar(){
+  const bar = el('div',{class:'topbar'});
+  const brand = el('div',{class:'brand'});
+  brand.appendChild(logoSvg());
+  brand.appendChild(el('b',{},[txt('Moments.')]));
+  bar.appendChild(brand);
+  const stepper = el('div',{class:'stepper'});
+  for(let i=1;i<=6;i++){
+    let cls='step-dot';
+    if(i<state.step) cls+=' done';
+    if(i===state.step) cls+=' on';
+    stepper.appendChild(el('span',{class:cls}));
+  }
+  bar.appendChild(stepper);
+  return bar;
+}
+
+// ================= STEP 1 — type de moment =================
+function allTypes(){ return state.presetTypes.concat(state.customTypes); }
+
+function renderStep1(){
+  const c = el('div');
+  c.appendChild(el('div',{class:'eyebrow'},[txt('Étape 1 · 6 — Le moment')]));
+  c.appendChild(el('h1',{},[txt('Que veux-tu raconter ?')]));
+  c.appendChild(el('p',{class:'sub'},[txt('Dans la vraie appli, cette première question se pose à la voix. Ici, on la simule avec des choix rapides.')]));
+
+  const card = el('div',{class:'card'});
+  const typeLabel = el('label',{class:'field'});
+  typeLabel.appendChild(el('span',{class:'lbl'},[txt('Type de moment')]));
+  const chipRow = el('div',{class:'chip-row'});
+  allTypes().forEach(t=>{
+    chipRow.appendChild(el('button',{class:'chip'+(state.eventType===t.id?' active':''), onclick:()=>{state.eventType=t.id; render();}},[txt(t.label)]));
+  });
+  const addChip = el('button',{class:'chip add', onclick:()=>{state.addingType=!state.addingType; render();}},[txt('+ Ajouter un type')]);
+  chipRow.appendChild(addChip);
+  typeLabel.appendChild(chipRow);
+
+  if(state.addingType){
+    const row = el('div',{class:'chip-input-row'});
+    const input = el('input',{type:'text', placeholder:'ex. Retrouvailles, Road trip…'});
+    const okBtn = el('button',{class:'ghost', onclick:()=>{
+      const v = input.value.trim();
+      if(v){
+        const id = 'custom-'+v.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+        state.customTypes.push({id, label:v});
+        state.eventType = id;
+      }
+      state.addingType=false; render();
+    }},[txt('Ajouter')]);
+    row.appendChild(input); row.appendChild(okBtn);
+    typeLabel.appendChild(row);
+  }
+  card.appendChild(typeLabel);
+
+  const destTitles = {mariage:'Lieu & mariés', naissance:'Prénom & date', evenement:"Nom de l'événement"};
+  const destLabel = el('label',{class:'field'});
+  destLabel.appendChild(el('span',{class:'lbl'},[txt(destTitles[state.eventType] || 'Titre / destination')]));
+  const destInput = el('input',{type:'text', placeholder:'ex. Japon — Tokyo, Kyoto, Osaka'});
+  destInput.value = state.destination;
+  destInput.addEventListener('input', e=>{ state.destination = e.target.value; });
+  destLabel.appendChild(destInput);
+  card.appendChild(destLabel);
+
+  c.appendChild(card);
+
+  const nav = el('div',{class:'footer-nav'});
+  nav.appendChild(el('span',{class:'hint'},[txt('')]));
+  nav.appendChild(el('button',{class:'primary', onclick:()=>{state.step=2; render();}},[txt('Continuer →')]));
+  c.appendChild(nav);
+  return c;
+}
+
+// ================= STEP 2 — récit =================
+function currentExample(){
+  if(EXAMPLES[state.eventType]) return EXAMPLES[state.eventType];
+  const custom = state.customTypes.find(t=>t.id===state.eventType);
+  if(custom) return `Ex. : « Raconte ${custom.label.toLowerCase()} comme tu le raconterais à un ami : ce qui s'est passé, un détail marquant, ce que tu as ressenti. »`;
+  return EXAMPLES.autre;
+}
+function fmtMMSS(total){
+  const m = Math.floor(total/60), s = total%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function stopRecording(){
+  if(state.recordTimer){ clearInterval(state.recordTimer); state.recordTimer=null; }
+  if(state.mediaRecorder && state.mediaRecorder.state!=='inactive') state.mediaRecorder.stop();
+  state.recording=false;
+}
+async function startRecording(){
+  state.micError = null;
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const rec = new MediaRecorder(stream);
+    const chunks = [];
+    rec.ondataavailable = e=>{ if(e.data.size>0) chunks.push(e.data); };
+    rec.onstop = ()=>{
+      const blob = new Blob(chunks, {type:'audio/webm'});
+      state.audioUrl = URL.createObjectURL(blob);
+      stream.getTracks().forEach(t=>t.stop());
+      render();
+    };
+    state.mediaRecorder = rec;
+    state.recording = true;
+    state.recordSeconds = 0;
+    rec.start();
+    render();
+    state.recordTimer = setInterval(()=>{
+      state.recordSeconds++;
+      if(state.recordSeconds>=300){ stopRecording(); render(); }
+      else render();
+    }, 1000);
+  }catch(e){
+    state.micError = "Micro inaccessible ici — souvent parce que ce fichier est ouvert directement (file://) sans connexion sécurisée. Ouvre-le via un petit serveur local pour tester l'audio, ou utilise le texte pour l'instant.";
+    render();
+  }
+}
+
+function renderStep2(){
+  const c = el('div');
+  c.appendChild(el('div',{class:'eyebrow'},[txt('Étape 2 · 6 — Le récit')]));
+  c.appendChild(el('h1',{},[txt('Raconte ce moment')]));
+  c.appendChild(el('p',{class:'sub'},[txt('5 minutes d’audio maximum, ou un texte sans limite. Ce récit habillera le diaporama.')]));
+
+  const card = el('div',{class:'card'});
+  const toggle = el('div',{class:'mode-toggle'});
+  toggle.appendChild(el('button',{class:state.narrationMode==='audio'?'active':'', onclick:()=>{state.narrationMode='audio'; render();}},[txt('🎙️ Audio (5 min max)')]));
+  toggle.appendChild(el('button',{class:state.narrationMode==='texte'?'active':'', onclick:()=>{state.narrationMode='texte'; render();}},[txt('✍️ Texte')]));
+  card.appendChild(toggle);
+
+  card.appendChild(el('div',{class:'example'},[txt(currentExample())]));
+
+  if(state.narrationMode==='texte'){
+    const area = el('textarea',{placeholder:'Écris ton récit ici…'});
+    area.value = state.narration;
+    area.addEventListener('input', e=>{ state.narration = e.target.value; });
+    card.appendChild(area);
+  } else {
+    const panel = el('div',{class:'rec-panel'});
+    if(!state.audioUrl){
+      panel.appendChild(el('button',{class:'rec-btn'+(state.recording?' recording':''), onclick:()=>{ state.recording ? stopRecording() : startRecording(); render(); }},[txt(state.recording?'■':'●')]));
+      panel.appendChild(el('div',{class:'rec-time'},[txt(fmtMMSS(state.recordSeconds)+' / 05:00')]));
+      panel.appendChild(el('div',{class:'rec-hint'},[txt(state.recording ? 'Enregistrement en cours — clique pour arrêter.' : 'Clique pour démarrer l’enregistrement.')]));
+      if(state.micError) panel.appendChild(el('div',{class:'mic-error'},[txt(state.micError)]));
+    } else {
+      const audio = el('audio',{controls:'controls', style:'width:100%;'});
+      audio.src = state.audioUrl;
+      panel.appendChild(audio);
+      panel.appendChild(el('button',{class:'ghost', onclick:()=>{ state.audioUrl=null; state.recordSeconds=0; render(); }},[txt('Recommencer')]));
+    }
+    card.appendChild(panel);
+  }
+  c.appendChild(card);
+
+  const nav = el('div',{class:'footer-nav'});
+  nav.appendChild(el('button',{class:'ghost', onclick:()=>{stopRecording(); state.step=1; render();}},[txt('← Retour')]));
+  nav.appendChild(el('button',{class:'primary', onclick:()=>{stopRecording(); state.step=3; render();}},[txt('Continuer →')]));
+  c.appendChild(nav);
+  return c;
+}
+
+// ================= EXIF + image analysis (unchanged core, + avg color) =================
+function readIFD(view, tiffStart, ifdOffset, little){
+  const numEntries = view.getUint16(tiffStart+ifdOffset, little);
+  const entries = {};
+  for(let i=0;i<numEntries;i++){
+    const entryOffset = tiffStart+ifdOffset+2+i*12;
+    const tag = view.getUint16(entryOffset, little);
+    const type = view.getUint16(entryOffset+2, little);
+    const count = view.getUint32(entryOffset+4, little);
+    entries[tag] = {type, count, valueOffsetPos: entryOffset+8};
+  }
+  return {entries};
+}
+function getExifValue(view, tiffStart, entry, little){
+  const sizes = {1:1,2:1,3:2,4:4,5:8,7:1,9:4,10:8};
+  const size = (sizes[entry.type]||1) * entry.count;
+  let offset = size<=4 ? entry.valueOffsetPos : tiffStart + view.getUint32(entry.valueOffsetPos, little);
+  try{
+    if(entry.type===2){
+      let str='';
+      for(let i=0;i<entry.count-1;i++) str += String.fromCharCode(view.getUint8(offset+i));
+      return str;
+    }
+    if(entry.type===5 || entry.type===10){
+      const vals=[];
+      for(let i=0;i<entry.count;i++){
+        const num=view.getUint32(offset+i*8, little);
+        const den=view.getUint32(offset+i*8+4, little);
+        vals.push(den===0?0:num/den);
+      }
+      return entry.count===1 ? vals[0] : vals;
+    }
+    if(entry.type===3) return view.getUint16(offset, little);
+    if(entry.type===4) return view.getUint32(offset, little);
+  }catch(e){ return null; }
+  return null;
+}
+function parseExif(buffer){
+  try{
+    const view = new DataView(buffer);
+    if(view.getUint16(0) !== 0xFFD8) return null;
+    let offset = 2;
+    while(offset < view.byteLength-2){
+      const marker = view.getUint16(offset);
+      if(marker === 0xFFE1){
+        const start = offset+4;
+        if(view.getUint32(start) !== 0x45786966){ offset += 2+view.getUint16(offset+2); continue; }
+        const tiffStart = start+6;
+        const little = view.getUint16(tiffStart) === 0x4949;
+        const firstIFDOffset = view.getUint32(tiffStart+4, little);
+        const {entries} = readIFD(view, tiffStart, firstIFDOffset, little);
+        let dateStr=null, lat=null, lon=null;
+        if(entries[0x8769]){
+          const exifIFDOffset = getExifValue(view, tiffStart, entries[0x8769], little);
+          const {entries: exifEntries} = readIFD(view, tiffStart, exifIFDOffset, little);
+          if(exifEntries[0x9003]) dateStr = getExifValue(view, tiffStart, exifEntries[0x9003], little);
+          else if(exifEntries[0x9004]) dateStr = getExifValue(view, tiffStart, exifEntries[0x9004], little);
+        }
+        if(!dateStr && entries[0x0132]) dateStr = getExifValue(view, tiffStart, entries[0x0132], little);
+        if(entries[0x8825]){
+          const gpsIFDOffset = getExifValue(view, tiffStart, entries[0x8825], little);
+          const {entries: gpsEntries} = readIFD(view, tiffStart, gpsIFDOffset, little);
+          if(gpsEntries[0x0002] && gpsEntries[0x0004]){
+            const latVals = getExifValue(view, tiffStart, gpsEntries[0x0002], little);
+            const lonVals = getExifValue(view, tiffStart, gpsEntries[0x0004], little);
+            const latRef = gpsEntries[0x0001] ? getExifValue(view, tiffStart, gpsEntries[0x0001], little) : 'N';
+            const lonRef = gpsEntries[0x0003] ? getExifValue(view, tiffStart, gpsEntries[0x0003], little) : 'E';
+            if(Array.isArray(latVals) && Array.isArray(lonVals)){
+              lat = (latVals[0]+latVals[1]/60+latVals[2]/3600) * (latRef==='S'?-1:1);
+              lon = (lonVals[0]+lonVals[1]/60+lonVals[2]/3600) * (lonRef==='W'?-1:1);
+            }
+          }
+        }
+        let date = null;
+        if(dateStr){
+          const m = dateStr.match(/(\d{4}):(\d{2}):(\d{2})\s(\d{2}):(\d{2}):(\d{2})/);
+          if(m) date = new Date(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +m[6]);
+        }
+        return {date, lat, lon};
+      } else if((marker & 0xFF00) !== 0xFF00){
+        break;
+      } else {
+        offset += 2 + view.getUint16(offset+2);
+      }
+    }
+  }catch(e){ /* not fatal */ }
+  return null;
+}
+function analyzeImage(imgEl){
+  const size = 32;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(imgEl, 0, 0, size, size);
+  const data = ctx.getImageData(0,0,size,size).data;
+  const gray = new Float32Array(size*size);
+  let rSum=0,gSum=0,bSum=0;
+  for(let i=0;i<size*size;i++){
+    const r=data[i*4], g=data[i*4+1], b=data[i*4+2];
+    gray[i]=0.299*r+0.587*g+0.114*b;
+    rSum+=r; gSum+=g; bSum+=b;
+  }
+  let sum=0, sumSq=0, count=0;
+  for(let y=1;y<size-1;y++){
+    for(let x=1;x<size-1;x++){
+      const idx=y*size+x;
+      const lap = -4*gray[idx]+gray[idx-1]+gray[idx+1]+gray[idx-size]+gray[idx+size];
+      sum+=lap; sumSq+=lap*lap; count++;
+    }
+  }
+  const mean = sum/count;
+  const variance = sumSq/count - mean*mean;
+
+  const hs = 8;
+  const hcanvas = document.createElement('canvas');
+  hcanvas.width=hs; hcanvas.height=hs;
+  const hctx = hcanvas.getContext('2d');
+  hctx.drawImage(imgEl,0,0,hs,hs);
+  const hdata = hctx.getImageData(0,0,hs,hs).data;
+  let hgray=[], hsum=0;
+  for(let i=0;i<hs*hs;i++){
+    const v = 0.299*hdata[i*4]+0.587*hdata[i*4+1]+0.114*hdata[i*4+2];
+    hgray.push(v); hsum+=v;
+  }
+  const havg = hsum/hgray.length;
+  let hash='';
+  for(let i=0;i<hgray.length;i++) hash += hgray[i]>havg ? '1':'0';
+
+  const n = size*size;
+  return { blur: variance, hash, avgR: rSum/n, avgG: gSum/n, avgB: bSum/n };
+}
+function hamming(a,b){ let d=0; for(let i=0;i<a.length;i++) if(a[i]!==b[i]) d++; return d; }
+function dayKey(d){ return d.toISOString().slice(0,10); }
+function fmtDay(d){ return d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short'}); }
+function loadImage(url){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=reject;
+    img.src=url;
+  });
+}
+async function ingestFiles(fileList){
+  state.processing = true;
+  state.processedCount = 0;
+  state.photos = [];
+  render();
+  const files = Array.from(fileList);
+  for(const file of files){
+    try{
+      const buffer = await file.arrayBuffer();
+      const exif = parseExif(buffer);
+      const url = URL.createObjectURL(file);
+      const img = await loadImage(url);
+      const a = analyzeImage(img);
+      const date = (exif && exif.date) ? exif.date : new Date(file.lastModified);
+      state.photos.push({ file, url, date, lat: exif?exif.lat:null, lon: exif?exif.lon:null, blur:a.blur, hash:a.hash, avgR:a.avgR, avgG:a.avgG, avgB:a.avgB });
+    }catch(e){ /* skip */ }
+    state.processedCount++;
+    if(state.processedCount % 5 === 0) render();
+  }
+  state.photos.sort((a,b)=> a.date-b.date);
+  state.processing = false;
+  render();
+}
+
+// ================= STEP 3 — photos + RGPD =================
+function renderStep3(){
+  const c = el('div');
+  c.appendChild(el('div',{class:'eyebrow'},[txt('Étape 3 · 6 — Les photos')]));
+  c.appendChild(el('h1',{},[txt('Dépose tout, sans trier')]));
+  c.appendChild(el('p',{class:'sub'},[txt('Aucune limite de nombre : 50, 500 ou 1500 photos, peu importe.')]));
+
+  const card = el('div',{class:'card'});
+  const dz = el('div',{class:'dropzone', onclick:()=>document.getElementById('fileInput').click()});
+  dz.appendChild(el('div',{class:'big'},[txt(state.photos.length ? state.photos.length+' photos chargées' : 'Dépose ou choisis tes photos')]));
+  dz.appendChild(el('p',{},[txt(state.processing ? ('Analyse en cours… '+state.processedCount+' traitées') : 'Glisser-déposer ou clic pour parcourir.')]));
+  card.appendChild(dz);
+  const input = el('input',{type:'file', id:'fileInput', accept:'image/*', multiple:'multiple', onchange:(e)=>{ if(e.target.files.length) ingestFiles(e.target.files); }});
+  card.appendChild(input);
+  ['dragover','dragleave','drop'].forEach(evt=>{
+    dz.addEventListener(evt,(e)=>{
+      e.preventDefault();
+      if(evt==='dragover') dz.classList.add('drag');
+      if(evt==='dragleave') dz.classList.remove('drag');
+      if(evt==='drop'){ dz.classList.remove('drag'); if(e.dataTransfer.files.length) ingestFiles(e.dataTransfer.files); }
+    });
+  });
+  if(state.photos.length && !state.processing){
+    const dates = state.photos.map(p=>p.date);
+    const min = new Date(Math.min(...dates)), max = new Date(Math.max(...dates));
+    const ticket = el('div',{class:'ticket'});
+    ticket.appendChild(el('span',{},[txt(fmtDay(min)+' → '+fmtDay(max))]));
+    ticket.appendChild(el('span',{},[txt(state.photos.length+' photos')]));
+    card.appendChild(ticket);
+  }
+  const priv = el('div',{class:'privacy'});
+  priv.appendChild(el('div',{class:'ic'},[txt('🔒')]));
+  const p = el('p',{});
+  p.appendChild(el('b',{},[txt('Données & vie privée — ')]));
+  p.appendChild(txt('tout est traité ici, dans ton navigateur : rien n’est envoyé à un serveur, ni stocké ailleurs que dans cette page. Photos et récit disparaissent si tu fermes ou actualises l’onglet.'));
+  priv.appendChild(p);
+  card.appendChild(priv);
+
+  c.appendChild(card);
+  const nav = el('div',{class:'footer-nav'});
+  nav.appendChild(el('button',{class:'ghost', onclick:()=>{state.step=2; render();}},[txt('← Retour')]));
+  const nextBtn = el('button',{class:'primary', onclick:()=>{state.step=4; render();}},[txt('Continuer →')]);
+  if(!state.photos.length || state.processing) nextBtn.disabled = true;
+  nav.appendChild(nextBtn);
+  c.appendChild(nav);
+  return c;
+}
+
+// ================= STEP 4 — format / longueur / style =================
+function renderStep4(){
+  const c = el('div');
+  c.appendChild(el('div',{class:'eyebrow'},[txt('Étape 4 · 6 — Mise en forme')]));
+  c.appendChild(el('h1',{},[txt('Quel rendu veux-tu ?')]));
+  c.appendChild(el('p',{class:'sub'},[txt('Le tri des photos reste automatique — tu choisis juste l’habillage.')]));
+
+  const card = el('div',{class:'card'});
+  card.appendChild(el('span',{class:'lbl'},[txt('Format de présentation')]));
+  const fgrid = el('div',{class:'format-grid'});
+  FORMATS.forEach(f=>{
+    const fc = el('button',{class:'format-card'+(state.format===f.id?' active':''), onclick:()=>{state.format=f.id; render();}});
+    fc.appendChild(el('div',{class:'ic'},[txt(f.ic)]));
+    fc.appendChild(el('b',{},[txt(f.label)]));
+    fc.appendChild(el('p',{},[txt(f.desc)]));
+    fgrid.appendChild(fc);
+  });
+  card.appendChild(fgrid);
+
+  const lenLabel = el('label',{class:'field'}); lenLabel.style.marginTop='20px';
+  lenLabel.appendChild(el('span',{class:'lbl'},[txt(state.format==='diapo' ? 'Nombre de slides visé' : 'Densité de la planche')]));
+  const chipRow = el('div',{class:'chip-row'});
+  SLIDE_COUNTS.forEach(([k,label])=>{
+    chipRow.appendChild(el('button',{class:'chip'+(state.slideCountOption===k?' active':''), onclick:()=>{state.slideCountOption=k; render();}},[txt(label)]));
+  });
+  lenLabel.appendChild(chipRow);
+  card.appendChild(lenLabel);
+  c.appendChild(card);
+
+  const card2 = el('div',{class:'card'});
+  card2.appendChild(el('span',{class:'lbl'},[txt('Style visuel')]));
+  const sgrid = el('div',{class:'style-grid'}); sgrid.style.marginTop='10px';
+  STYLES.forEach(s=>{
+    const sc = el('button',{class:'style-card'+(state.style===s.id?' active':''), onclick:()=>{state.style=s.id; render();}});
+    sc.appendChild(el('div',{class:'sw', style:`background:${s.swatch}`}));
+    sc.appendChild(el('span',{},[txt(s.label)]));
+    sgrid.appendChild(sc);
+  });
+  card2.appendChild(sgrid);
+  card2.appendChild(el('p',{class:'hint', style:'margin-top:12px;'},[txt('« Automatique » regarde les couleurs dominantes de tes photos sélectionnées pour choisir le style le plus adapté.')]));
+  c.appendChild(card2);
+
+  const nav = el('div',{class:'footer-nav'});
+  nav.appendChild(el('button',{class:'ghost', onclick:()=>{state.step=3; render();}},[txt('← Retour')]));
+  nav.appendChild(el('button',{class:'primary', onclick:()=>{ runSelection(); state.step=5; render(); }},[txt('Trier & générer →')]));
+  c.appendChild(nav);
+  return c;
+}
+
+// ================= SELECTION ALGORITHM =================
+function resolveAutoStyle(photos){
+  if(!photos.length) return 'sobre';
+  let rSum=0,gSum=0,bSum=0;
+  photos.forEach(p=>{ rSum+=p.avgR; gSum+=p.avgG; bSum+=p.avgB; });
+  const n = photos.length;
+  const r=rSum/n, g=gSum/n, b=bSum/n;
+  const maxC = Math.max(r,g,b), minC = Math.min(r,g,b);
+  const sat = maxC>0 ? (maxC-minC)/maxC : 0;
+  const warmth = r-b;
+  if(sat < 0.10) return 'bw';
+  if(warmth > 16 && sat < 0.32) return 'sepia';
+  if(sat > 0.32) return 'scrap';
+  return 'sobre';
+}
+
+function runSelection(){
+  const photos = state.photos;
+  const targetForRatio = state.slideCountOption==='auto' ? Math.max(10, Math.round(photos.length/6)) : parseInt(state.slideCountOption,10)*3;
+
+  const groups = {};
+  photos.forEach(p=>{ const k=dayKey(p.date); (groups[k]=groups[k]||[]).push(p); });
+  const dayKeys = Object.keys(groups).sort();
+
+  const sortedByBlur = [...photos].sort((a,b)=> a.blur-b.blur);
+  const blurCut = photos.length > targetForRatio*3 ? Math.floor(photos.length*0.15) : 0;
+  const blurryIds = new Set(sortedByBlur.slice(0, blurCut).map(p=>p.file));
+
+  const dupIds = new Set();
+  dayKeys.forEach(k=>{
+    const list = groups[k].slice().sort((a,b)=>a.date-b.date);
+    for(let i=1;i<list.length;i++){
+      if(blurryIds.has(list[i].file) || blurryIds.has(list[i-1].file)) continue;
+      if(hamming(list[i].hash, list[i-1].hash) <= 6){
+        const loser = list[i].blur >= list[i-1].blur ? list[i-1] : list[i];
+        dupIds.add(loser.file);
+      }
+    }
+  });
+
+  const pool = photos.filter(p=> !blurryIds.has(p.file) && !dupIds.has(p.file));
+  const poolByDay = {};
+  pool.forEach(p=>{ const k=dayKey(p.date); (poolByDay[k]=poolByDay[k]||[]).push(p); });
+  const activeDays = Object.keys(poolByDay).sort();
+  const finalTarget = Math.min(targetForRatio, pool.length);
+
+  let quotas = {};
+  if(activeDays.length){
+    let raw = activeDays.map(k=> (poolByDay[k].length/pool.length) * finalTarget);
+    let base = raw.map(v=>Math.floor(v));
+    let used = base.reduce((a,b)=>a+b,0);
+    let leftover = finalTarget-used;
+    let fracOrder = raw.map((v,i)=>({i, frac:v-base[i]})).sort((a,b)=>b.frac-a.frac);
+    for(let i=0;i<leftover;i++){ base[fracOrder[i%fracOrder.length].i]++; }
+    activeDays.forEach((k,i)=>{ quotas[k]=Math.min(Math.max(base[i],1), poolByDay[k].length); });
+  }
+
+  const selection = [];
+  activeDays.forEach(k=>{
+    const list = poolByDay[k].slice().sort((a,b)=>b.blur-a.blur);
+    const picked = list.slice(0, quotas[k]);
+    picked.sort((a,b)=>a.date-b.date);
+    selection.push(...picked);
+  });
+
+  state.stats = { total: photos.length, blurry: blurCut, duplicates: dupIds.size, selected: selection.length, days: dayKeys.length };
+  state.selection = selection;
+  state.resolvedStyle = state.style==='auto' ? resolveAutoStyle(selection) : state.style;
+  buildSlides();
+}
+
+function splitIntoChunks(arr, n){
+  n = Math.max(1, Math.min(n, arr.length));
+  const chunks=[]; let idx=0;
+  const base = Math.floor(arr.length/n), extra = arr.length%n;
+  for(let i=0;i<n;i++){
+    const size = base + (i<extra?1:0);
+    const take = Math.max(size,1);
+    chunks.push(arr.slice(idx, idx+take));
+    idx += take;
+  }
+  if(idx<arr.length && chunks.length) chunks[chunks.length-1] = chunks[chunks.length-1].concat(arr.slice(idx));
+  return chunks.filter(c=>c.length>0);
+}
+
+function buildSlides(){
+  const sel = state.selection;
+  if(!sel.length){ state.slides=[]; return; }
+  const groups = {};
+  sel.forEach(p=>{ const k=dayKey(p.date); (groups[k]=groups[k]||[]).push(p); });
+  const dayKeys = Object.keys(groups).sort();
+
+  let targetSlides;
+  if(state.slideCountOption==='auto') targetSlides = Math.max(dayKeys.length+2, Math.min(30, Math.round(sel.length/3)));
+  else targetSlides = parseInt(state.slideCountOption,10);
+
+  const hasNarration = !!(state.narration && state.narration.trim()) || !!state.audioUrl;
+  let budget = Math.max(targetSlides - 1 - (hasNarration?1:0), dayKeys.length, 1);
+
+  const nSlidesPerDay = dayKeys.map(k=> Math.max(1, Math.ceil(groups[k].length/4), Math.round((groups[k].length/sel.length)*budget)));
+
+  const slides = [{type:'cover'}];
+  dayKeys.forEach((k,di)=>{
+    const chunks = splitIntoChunks(groups[k], nSlidesPerDay[di]);
+    chunks.forEach((chunk,ci)=>{
+      const template = chunk.length===1?'single': chunk.length===2?'duo': chunk.length===3?'trio':'quad';
+      slides.push({type:'photos', template, photos:chunk.slice(0,4), day:groups[k][0].date, isFirstOfDay: ci===0});
+    });
+  });
+  if(hasNarration) slides.push({type:'quote'});
+  state.slides = slides;
+}
+
+// ================= STEP 5 — tri report =================
+function renderStep5(){
+  const c = el('div');
+  c.appendChild(el('div',{class:'eyebrow'},[txt('Étape 5 · 6 — Le tri')]));
+  c.appendChild(el('h1',{},[txt('Ce que l’outil a gardé')]));
+  c.appendChild(el('p',{class:'sub'},[txt('Sans reconnaissance de contenu par IA pour l’instant — juste netteté, doublons et répartition dans le temps.')]));
+
+  const card = el('div',{class:'card'});
+  const s = state.stats;
+  const styleLbl = STYLES.find(x=>x.id===state.resolvedStyle)?.label || state.resolvedStyle;
+  const lines = [
+    ['Photos importées', s.total],
+    ['Écartées — floues', s.blurry],
+    ['Écartées — quasi-doublons', s.duplicates],
+    ['Jours couverts', s.days],
+    ['Retenues', s.selected],
+    ['Style retenu', styleLbl + (state.style==='auto' ? ' (auto)' : '')],
+  ];
+  lines.forEach(([label,n])=>{
+    const row = el('div',{class:'stat-line'});
+    row.appendChild(el('span',{},[txt(label)]));
+    row.appendChild(el('span',{class:'n'},[txt(String(n))]));
+    card.appendChild(row);
+  });
+  c.appendChild(card);
+
+  const nav = el('div',{class:'footer-nav'});
+  nav.appendChild(el('button',{class:'ghost', onclick:()=>{state.step=4; render();}},[txt('← Ajuster')]));
+  nav.appendChild(el('button',{class:'primary', onclick:()=>{state.slideIndex=0; state.step=6; render();}},[txt('Voir le résultat →')]));
+  c.appendChild(nav);
+  return c;
+}
+
+// ================= STEP 6 — result =================
+function stopPlay(){ if(state.playTimer){clearInterval(state.playTimer); state.playTimer=null;} state.playing=false; }
+function startPlay(){
+  stopPlay(); state.playing=true;
+  state.playTimer = setInterval(()=>{ state.slideIndex=(state.slideIndex+1)%state.slides.length; render(); }, 3200);
+}
+
+function renderSlide(slide){
+  const holder = el('div',{class:'slide'});
+  if(slide.type==='cover'){
+    const cover = el('div',{class:'cover-slide', style:`background-image:url('${state.selection[0]?.url||''}')`});
+    const inner = el('div',{class:'cover-inner'});
+    const typeLabel = allTypes().find(t=>t.id===state.eventType)?.label || 'Moment';
+    inner.appendChild(el('div',{class:'type'},[txt(typeLabel)]));
+    inner.appendChild(el('h2',{},[txt(state.destination || typeLabel)]));
+    if(state.selection.length){
+      const dates = state.selection.map(p=>p.date);
+      inner.appendChild(el('div',{class:'range'},[txt(fmtDay(new Date(Math.min(...dates)))+' → '+fmtDay(new Date(Math.max(...dates))))]));
+    }
+    cover.appendChild(inner);
+    holder.appendChild(cover);
+  } else if(slide.type==='photos'){
+    const grid = el('div',{class:'photo-grid tpl-'+slide.template});
+    slide.photos.forEach((p,i)=>{
+      const cell = el('div',{class:'cell'});
+      cell.appendChild(el('img',{src:p.url}));
+      if(i===0 && slide.isFirstOfDay) cell.appendChild(el('div',{class:'day-tag'},[txt(fmtDay(slide.day))]));
+      grid.appendChild(cell);
+    });
+    holder.appendChild(grid);
+  } else if(slide.type==='quote'){
+    const q = el('div',{class:'quote-slide'});
+    const inner = el('div',{});
+    if(state.narration && state.narration.trim()){
+      inner.appendChild(el('div',{class:'q'},[txt(state.narration)]));
+    } else if(state.audioUrl){
+      inner.appendChild(el('div',{class:'q'},[txt('Écoute le récit :')]));
+      const audio = el('audio',{controls:'controls', class:'quote-audio'});
+      audio.src = state.audioUrl;
+      inner.appendChild(audio);
+    }
+    q.appendChild(inner);
+    holder.appendChild(q);
+  }
+  return holder;
+}
+
+function renderDiapoFormat(){
+  const wrap = el('div',{class:'stage-wrap style-'+state.resolvedStyle});
+  const stage = el('div',{class:'stage'});
+  const slide = state.slides[state.slideIndex];
+  if(slide) stage.appendChild(renderSlide(slide));
+  wrap.appendChild(stage);
+  const dots = el('div',{class:'dots'});
+  state.slides.forEach((_,i)=> dots.appendChild(el('span',{class:'dot'+(i===state.slideIndex?' on':'')})));
+  const controls = el('div',{class:'controls'});
+  controls.appendChild(el('button',{class:'ghost', onclick:()=>{stopPlay(); state.slideIndex=(state.slideIndex-1+state.slides.length)%state.slides.length; render();}},[txt('‹')]));
+  controls.appendChild(el('button',{class:'ghost', onclick:()=>{ state.playing?stopPlay():startPlay(); render(); }},[txt(state.playing?'Pause':'Lecture ▶')]));
+  controls.appendChild(el('button',{class:'ghost', onclick:()=>{stopPlay(); state.slideIndex=(state.slideIndex+1)%state.slides.length; render();}},[txt('›')]));
+  const container = el('div',{});
+  container.appendChild(wrap);
+  container.appendChild(dots);
+  container.appendChild(controls);
+  return container;
+}
+
+function renderGridFormat(kind){
+  const grid = el('div',{class:'grid-format style-'+state.resolvedStyle+(kind==='album'?' format-album':'')});
+  const typeLabel = allTypes().find(t=>t.id===state.eventType)?.label || 'Moment';
+  const title = el('div',{class:'g-tile text'});
+  title.appendChild(el('h3',{},[txt(state.destination || typeLabel)]));
+  const dates = state.selection.map(p=>p.date);
+  if(dates.length) title.appendChild(el('p',{},[txt(fmtDay(new Date(Math.min(...dates)))+' → '+fmtDay(new Date(Math.max(...dates))))]));
+  grid.appendChild(title);
+
+  const mid = Math.floor(state.selection.length/2);
+  let lastDay = null;
+  state.selection.forEach((p,i)=>{
+    const tile = el('div',{class:'g-tile'});
+    tile.appendChild(el('img',{src:p.url}));
+    const dk = dayKey(p.date);
+    if(dk!==lastDay){ tile.appendChild(el('div',{class:'tag'},[txt(fmtDay(p.date))])); lastDay=dk; }
+    grid.appendChild(tile);
+    if(i===mid && (state.narration?.trim() || state.audioUrl)){
+      const qtile = el('div',{class:'g-tile text'});
+      qtile.appendChild(el('h3',{},[txt('Le récit')]));
+      qtile.appendChild(el('p',{},[txt(state.narration?.trim() ? state.narration.slice(0,220) : 'Un récit audio accompagne ces photos.')]));
+      grid.appendChild(qtile);
+    }
+  });
+  return grid;
+}
+
+function renderStep6(){
+  const c = el('div');
+  c.appendChild(el('div',{class:'eyebrow'},[txt('Étape 6 · 6 — Résultat')]));
+  const titleRow = el('div',{style:'display:flex;align-items:center;'});
+  const typeLabel = allTypes().find(t=>t.id===state.eventType)?.label || 'Moment';
+  titleRow.appendChild(el('h1',{style:'margin-bottom:0'},[txt(state.destination || typeLabel)]));
+  titleRow.appendChild(el('span',{class:'badge'},[txt(FORMATS.find(f=>f.id===state.format).label)]));
+  c.appendChild(titleRow);
+  c.appendChild(el('p',{class:'sub'},[txt(state.selection.length+' photos · style '+(STYLES.find(s=>s.id===state.resolvedStyle)?.label||state.resolvedStyle))]));
+
+  if(state.format==='diapo') c.appendChild(renderDiapoFormat());
+  else c.appendChild(renderGridFormat(state.format));
+
+  const nav = el('div',{class:'footer-nav'});
+  nav.appendChild(el('button',{class:'ghost', onclick:()=>{stopPlay(); state.step=5; render();}},[txt('← Revoir le tri')]));
+  nav.appendChild(el('button',{class:'ghost', onclick:()=>{stopPlay(); state.step=4; render();}},[txt('Changer format/style')]));
+  c.appendChild(nav);
+  return c;
+}
+
+render();
+</script>
+</body>
+</html>
